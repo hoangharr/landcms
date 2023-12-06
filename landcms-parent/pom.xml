@@ -8,8 +8,7 @@
         <artifactId>landcms-dependencies</artifactId>
         <version>1.0.0.BUILD-SNAPSHOT</version>
         <relativePath>../landcms-dependencies</relativePath>
-    </parent>
-    <groupId>org.laolis</groupId>
+    </parent>    
     <artifactId>landcms-parent</artifactId>
     <packaging>pom</packaging>
     <name>Land CMS Parent</name>

@@ -1,5 +1,5 @@
 <configuration>
 	<include resource="org/springframework/boot/logging/logback/base.xml"/>
 
-	<logger name="org.laolis.cms" level="INFO" />
+	<logger name="org.laolis.cms" level="DEBUG" />
 </configuration>

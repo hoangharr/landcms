@@ -59,6 +59,10 @@ public class BlogLanguageDataValueProcessor implements RequestDataValueProcessor
 		}
 
 		String path = url.substring(contextPath.length());
+		// The temporary fix for user login with multi-language settings 
+		if (path.equals("/login") || path.equals("/logout"))
+			return path;
+		
 		String processedUrl = contextPath + "/" + blogLanguage.getLanguage() + path;
 		logger.debug(url + " => " + processedUrl);
 		return processedUrl;
