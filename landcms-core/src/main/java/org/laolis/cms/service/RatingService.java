@@ -32,7 +32,7 @@ public class RatingService {
 	@Resource
 	private UserRepository userRepository;
 
-	private static Logger logger = LoggerFactory.getLogger(CommentService.class);
+	private static Logger logger = LoggerFactory.getLogger(RatingService.class);
 
 	public Rating createRating(RatingCreateRequest request, AuthorizedUser createdBy) {
 		Post post = postRepository.findOneByIdAndLanguage(request.getPostId(), request.getBlogLanguage().getLanguage());
