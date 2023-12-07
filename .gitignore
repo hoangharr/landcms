@@ -23608,3 +23608,5 @@ landcms-ui-guest/node_modules/yargs/package.json
 landcms-ui-guest/node_modules/yargs/README.md
 landcms-ui-guest/node_modules/yargs/yargs.js
 landcms-ui-guest/package-lock.json
+landcms-home/
+.settings/
