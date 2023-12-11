@@ -7,8 +7,8 @@ import org.laolis.cms.domain.BlogLanguage;
 public class RatingCreateRequest implements Serializable {
 
 	private BlogLanguage blogLanguage;
-	private long postId;
-	private long userId;
+	private Long postId;
+	private Long authorId;
 	private int ratingStar;
 
 	public BlogLanguage getBlogLanguage() {
@@ -19,20 +19,20 @@ public class RatingCreateRequest implements Serializable {
 		this.blogLanguage = blogLanguage;
 	}
 
-	public long getPostId() {
+	public Long getPostId() {
 		return postId;
 	}
 
-	public void setPostId(long postId) {
+	public void setPostId(Long postId) {
 		this.postId = postId;
 	}
 
-	public long getUserId() {
-		return userId;
+	public Long getAuthorId() {
+		return authorId;
 	}
 
-	public void setUserId(long userId) {
-		this.userId = userId;
+	public void setAuthorId(Long authorId) {
+		this.authorId = authorId;
 	}
 
 	public int getRatingStar() {

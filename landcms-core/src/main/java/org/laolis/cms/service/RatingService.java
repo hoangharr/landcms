@@ -1,10 +1,10 @@
 package org.laolis.cms.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import javax.annotation.Resource;
 
-import org.laolis.cms.domain.Comment;
 import org.laolis.cms.domain.Post;
 import org.laolis.cms.domain.Rating;
 import org.laolis.cms.domain.User;
@@ -34,25 +34,48 @@ public class RatingService {
 
 	private static Logger logger = LoggerFactory.getLogger(RatingService.class);
 
-	public Rating createRating(RatingCreateRequest request, AuthorizedUser createdBy) {
-		Post post = postRepository.findOneByIdAndLanguage(request.getPostId(), request.getBlogLanguage().getLanguage());
-		if (post == null) {
-			throw new ServiceException("Post was not found [" + request.getPostId() + "]");
+	public Integer getUserRatingForPost(Long postId) {
+		Rating rating = ratingRepository.findByPostId(postId);
+
+		return (rating != null) ? rating.getRatingStar() : null;
+	}
+
+	public Rating saveUserRating(RatingCreateRequest request, AuthorizedUser createdBy) {
+		if (request == null || request.getPostId() == null) {
+			throw new ServiceException("Invalid request: Missing postId");
 		}
 
-		User user = userRepository.findOneById(request.getUserId());
+		Post post = postRepository.findOneById(request.getPostId());
+		if (post == null) {
+			throw new ServiceException("Post not found");
+		}
+
+		User author = userRepository.findOneById(request.getAuthorId());
+
+		if (author == null || request.getAuthorId() == null) {
+			throw new ServiceException("User not found");
+		}
+
+		Rating existingRating = ratingRepository.findByAuthorAndPost(author, post);
 
 		LocalDateTime now = LocalDateTime.now();
-		Comment comment = new Comment();
-		Rating rating = new Rating();
-		rating.setPost(post);
-		rating.setUser(user);
+		Rating rating;
 
-		comment.setCreatedAt(now);
-		comment.setCreatedBy(createdBy.toString());
-		comment.setUpdatedAt(now);
-		comment.setUpdatedBy(createdBy.toString());
-
+		if (existingRating != null) {
+			rating = existingRating;
+			rating.setRatingStar(request.getRatingStar());
+			rating.setUpdatedAt(now);
+			rating.setUpdatedBy(createdBy.toString());
+		} else {
+			rating = new Rating();
+			rating.setPost(post);
+			rating.setAuthor(author);
+			rating.setRatingStar(request.getRatingStar());
+			rating.setCreatedAt(now);
+			rating.setCreatedBy(createdBy.toString());
+			rating.setUpdatedAt(now);
+			rating.setUpdatedBy(createdBy.toString());
+		}
 		return ratingRepository.saveAndFlush(rating);
 	}
 
@@ -62,7 +85,7 @@ public class RatingService {
 			throw new ServiceException();
 		}
 		if (!updatedBy.getRoles().contains(User.Role.ADMIN)
-				&& !ObjectUtils.nullSafeEquals(rating.getUser(), updatedBy)) {
+				&& !ObjectUtils.nullSafeEquals(rating.getAuthor(), updatedBy)) {
 			throw new ServiceException();
 		}
 
@@ -79,10 +102,14 @@ public class RatingService {
 			throw new ServiceException();
 		}
 		if (!deletedBy.getRoles().contains(User.Role.ADMIN)
-				&& !ObjectUtils.nullSafeEquals(rating.getUser(), deletedBy)) {
+				&& !ObjectUtils.nullSafeEquals(rating.getAuthor(), deletedBy)) {
 			throw new ServiceException();
 		}
 		ratingRepository.delete(rating);
 		return rating;
+	}
+
+	public List<Rating> getAllRatings() {
+		return ratingRepository.findAll();
 	}
 }

@@ -16,11 +16,33 @@
 
 package org.laolis.cms.service;
 
-import com.google.api.services.analytics.Analytics;
-import com.google.api.services.analytics.model.GaData;
+import java.io.IOException;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.Predicate;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 
 import org.laolis.cms.autoconfigure.WallRideCacheConfiguration;
-import org.laolis.cms.domain.*;
+import org.laolis.cms.domain.BlogLanguage;
+import org.laolis.cms.domain.GoogleAnalytics;
+import org.laolis.cms.domain.PopularPost;
+import org.laolis.cms.domain.PopularPost_;
+import org.laolis.cms.domain.Post;
+import org.laolis.cms.domain.Post_;
+import org.laolis.cms.domain.Rating;
 import org.laolis.cms.exception.GoogleAnalyticsException;
 import org.laolis.cms.exception.ServiceException;
 import org.laolis.cms.model.PostSearchRequest;
@@ -60,27 +82,16 @@ import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
-import org.laolis.cms.domain.PopularPost_;
-import org.laolis.cms.domain.Post_;
 
-import javax.persistence.criteria.Join;
-import javax.persistence.criteria.Predicate;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import com.google.api.services.analytics.Analytics;
+import com.google.api.services.analytics.model.GaData;
 
 /**
  *
  * @author OGAWA, Takeshi
  */
 @Service
-@Transactional(rollbackFor=Exception.class)
+@Transactional(rollbackFor = Exception.class)
 public class PostService {
 
 	@Autowired
@@ -105,6 +116,20 @@ public class PostService {
 
 	private static Logger logger = LoggerFactory.getLogger(PostService.class);
 
+	public void updateAverageRating(Long postId) {
+		Post post = postRepository.findById(postId).orElse(null);
+		if (post != null) {
+			List<Rating> ratings = post.getRatings();
+			if (!ratings.isEmpty()) {
+				double averageRating = ratings.stream().mapToInt(Rating::getRatingStar).average().orElse(0.0);
+				post.setAverageRating(averageRating);
+			} else {
+				post.setAverageRating(null);
+			}
+			postRepository.save(post);
+		}
+	}
+
 	public List<Post> publishScheduledPosts() {
 		logger.info("Starting public posts of the scheduled");
 
@@ -128,7 +153,8 @@ public class PostService {
 		LocalDateTime now = LocalDateTime.now();
 		Set<JobExecution> jobExecutions = jobExplorer.findRunningJobExecutions("updatePostViewsJob");
 		for (JobExecution jobExecution : jobExecutions) {
-			LocalDateTime startTime = LocalDateTime.ofInstant(jobExecution.getStartTime().toInstant(), ZoneId.systemDefault());
+			LocalDateTime startTime = LocalDateTime.ofInstant(jobExecution.getStartTime().toInstant(),
+					ZoneId.systemDefault());
 			Duration d = Duration.between(now, startTime);
 			if (Math.abs(d.toMinutes()) == 0) {
 				logger.info("Skip processing because the job is running.");
@@ -137,8 +163,7 @@ public class PostService {
 		}
 
 		JobParameters params = new JobParametersBuilder()
-				.addDate("now", Date.from(now.atZone(ZoneId.systemDefault()).toInstant()))
-				.toJobParameters();
+				.addDate("now", Date.from(now.atZone(ZoneId.systemDefault()).toInstant())).toJobParameters();
 		try {
 			jobLauncher.run(updatePostViewsJob, params);
 		} catch (Exception e) {
@@ -165,7 +190,8 @@ public class PostService {
 
 		Analytics analytics = GoogleAnalyticsUtils.buildClient(googleAnalytics);
 
-		WebApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(servletContext, "org.springframework.web.servlet.FrameworkServlet.CONTEXT.guestServlet");
+		WebApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(servletContext,
+				"org.springframework.web.servlet.FrameworkServlet.CONTEXT.guestServlet");
 		if (context == null) {
 			logger.info("GuestServlet is not ready yet");
 			return;
@@ -184,19 +210,26 @@ public class PostService {
 				LocalDate now = LocalDate.now();
 				LocalDate startDate;
 				switch (type) {
-					case DAILY: startDate = now.minusDays(1); break;
-					case WEEKLY: startDate = now.minusWeeks(1); break;
-					case MONTHLY: startDate = now.minusMonths(1); break;
-					default: throw new ServiceException();
+				case DAILY:
+					startDate = now.minusDays(1);
+					break;
+				case WEEKLY:
+					startDate = now.minusWeeks(1);
+					break;
+				case MONTHLY:
+					startDate = now.minusMonths(1);
+					break;
+				default:
+					throw new ServiceException();
 				}
 
 				DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 				Analytics.Data.Ga.Get get = analytics.data().ga()
-						.get(googleAnalytics.getProfileId(), startDate.format(dateTimeFormatter), now.format(dateTimeFormatter), "ga:sessions")
+						.get(googleAnalytics.getProfileId(), startDate.format(dateTimeFormatter),
+								now.format(dateTimeFormatter), "ga:sessions")
 						.setDimensions(String.format("ga:pagePath", googleAnalytics.getCustomDimensionIndex()))
 						.setSort(String.format("-ga:sessions", googleAnalytics.getCustomDimensionIndex()))
-						.setStartIndex(startIndex)
-						.setMaxResults(GoogleAnalyticsUtils.MAX_RESULTS);
+						.setStartIndex(startIndex).setMaxResults(GoogleAnalyticsUtils.MAX_RESULTS);
 				if (blogLanguage.getBlog().isMultiLanguage()) {
 					get.setFilters("ga:pagePath=~/" + blogLanguage.getLanguage() + "/");
 				}
@@ -216,7 +249,8 @@ public class PostService {
 					MockHttpServletResponse response = new MockHttpServletResponse();
 
 					BlogLanguageRewriteRule rewriteRule = new BlogLanguageRewriteRule(blogService);
-					BlogLanguageRewriteMatch rewriteMatch = (BlogLanguageRewriteMatch) rewriteRule.matches(request, response);
+					BlogLanguageRewriteMatch rewriteMatch = (BlogLanguageRewriteMatch) rewriteRule.matches(request,
+							response);
 					try {
 						rewriteMatch.execute(request, response);
 					} catch (ServletException e) {
@@ -239,13 +273,15 @@ public class PostService {
 					}
 
 					HandlerMethod method = (HandlerMethod) handler.getHandler();
-					if (!method.getBeanType().equals(ArticleDescribeController.class) && !method.getBeanType().equals(PageDescribeController.class)) {
+					if (!method.getBeanType().equals(ArticleDescribeController.class)
+							&& !method.getBeanType().equals(PageDescribeController.class)) {
 						continue;
 					}
 
 					// Last path mean code of post
 					String code = uriComponents.getPathSegments().get(uriComponents.getPathSegments().size() - 1);
-					Post post = postRepository.findOneByCodeAndLanguage(code, rewriteMatch.getBlogLanguage().getLanguage());
+					Post post = postRepository.findOneByCodeAndLanguage(code,
+							rewriteMatch.getBlogLanguage().getLanguage());
 					if (post == null) {
 						logger.debug("Post not found [{}]", code);
 						continue;
@@ -306,6 +342,10 @@ public class PostService {
 
 	public Page<Post> getPosts(PostSearchRequest request, Pageable pageable) {
 		return postRepository.search(request, pageable);
+	}
+
+	public List<Post> getAllPosts() {
+		return postRepository.findAll();
 	}
 
 	/**

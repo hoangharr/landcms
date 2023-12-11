@@ -16,25 +16,37 @@
 
 package org.laolis.cms.domain;
 
+import java.time.LocalDateTime;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedAttributeNode;
+import javax.persistence.NamedEntityGraph;
+import javax.persistence.NamedEntityGraphs;
+import javax.persistence.Table;
+
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
-import org.hibernate.search.annotations.*;
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Analyzer;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
-
-import javax.persistence.*;
-import java.time.LocalDateTime;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.IndexedEmbedded;
+import org.hibernate.search.annotations.SortableField;
 
 @Entity
 @NamedEntityGraphs({
-		@NamedEntityGraph(name = Comment.SHALLOW_GRAPH_NAME,
-				attributeNodes = {
-						@NamedAttributeNode("author")}
-		),
-		@NamedEntityGraph(name = Comment.DEEP_GRAPH_NAME,
-				attributeNodes = {
-						@NamedAttributeNode("author")})
-})
+		@NamedEntityGraph(name = Comment.SHALLOW_GRAPH_NAME, attributeNodes = { @NamedAttributeNode("author") }),
+		@NamedEntityGraph(name = Comment.DEEP_GRAPH_NAME, attributeNodes = { @NamedAttributeNode("author") }) })
 @Table(name = "comment")
 @DynamicInsert
 @DynamicUpdate
@@ -56,7 +68,7 @@ public class Comment extends DomainObject<Long> implements Comparable<Comment> {
 	@IndexedEmbedded(includeEmbeddedObjectId = true)
 	private Post post;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@IndexedEmbedded(includeEmbeddedObjectId = true)
 	private User author;
 
@@ -65,10 +77,8 @@ public class Comment extends DomainObject<Long> implements Comparable<Comment> {
 	private String authorName;
 
 	@Column(nullable = false)
-	@Fields({
-			@Field,
-			@Field(name = "sortDate", analyze = Analyze.NO, index = org.hibernate.search.annotations.Index.NO)
-	})
+	@Fields({ @Field,
+			@Field(name = "sortDate", analyze = Analyze.NO, index = org.hibernate.search.annotations.Index.NO) })
 	@SortableField(forField = "sortDate")
 	private LocalDateTime date;
 
@@ -144,9 +154,7 @@ public class Comment extends DomainObject<Long> implements Comparable<Comment> {
 	}
 
 	public int compareTo(Comment comment) {
-		return new CompareToBuilder()
-				.append(getDate(), comment.getDate())
-				.append(getId(), comment.getId())
+		return new CompareToBuilder().append(getDate(), comment.getDate()).append(getId(), comment.getId())
 				.toComparison();
 	}
 }

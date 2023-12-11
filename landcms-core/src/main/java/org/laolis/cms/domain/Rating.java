@@ -34,9 +34,9 @@ public class Rating extends DomainObject<Long> {
 	private Post post;
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "user_id")
+	@JoinColumn(name = "author_id")
 	@IndexedEmbedded(includeEmbeddedObjectId = true)
-	private User user;
+	private User author;
 
 	@Column(name = "rating_star", nullable = false)
 	private int ratingStar;
@@ -46,7 +46,7 @@ public class Rating extends DomainObject<Long> {
 		return id;
 	}
 
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
@@ -58,12 +58,12 @@ public class Rating extends DomainObject<Long> {
 		this.post = post;
 	}
 
-	public User getUser() {
-		return user;
+	public User getAuthor() {
+		return author;
 	}
 
-	public void setUser(User user) {
-		this.user = user;
+	public void setAuthor(User author) {
+		this.author = author;
 	}
 
 	public int getRatingStar() {

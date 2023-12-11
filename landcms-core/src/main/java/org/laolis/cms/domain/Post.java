@@ -170,6 +170,8 @@ public class Post extends DomainObject<Long> {
 	@OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
 	private List<Rating> ratings = new ArrayList<>();
 
+	private Double averageRating;
+
 	@ManyToMany
 	@JoinTable(name = "post_related_post", joinColumns = { @JoinColumn(name = "post_id") }, inverseJoinColumns = {
 			@JoinColumn(name = "related_id") })
@@ -328,6 +330,22 @@ public class Post extends DomainObject<Long> {
 
 	public void setComments(SortedSet<Comment> comments) {
 		this.comments = comments;
+	}
+
+	public List<Rating> getRatings() {
+		return ratings;
+	}
+
+	public void setRatings(List<Rating> ratings) {
+		this.ratings = ratings;
+	}
+
+	public Double getAverageRating() {
+		return averageRating;
+	}
+
+	public void setAverageRating(Double averageRating) {
+		this.averageRating = averageRating;
 	}
 
 	public Set<Post> getRelatedPosts() {

@@ -18,12 +18,21 @@ package org.laolis.cms.autoconfigure;
 
 import org.laolis.cms.service.BlogService;
 import org.laolis.cms.service.PageService;
-import org.laolis.cms.web.controller.guest.*;
+import org.laolis.cms.web.controller.guest.CategoryController;
+import org.laolis.cms.web.controller.guest.FeedController;
+import org.laolis.cms.web.controller.guest.IndexController;
+import org.laolis.cms.web.controller.guest.SearchController;
+import org.laolis.cms.web.controller.guest.TagController;
 import org.laolis.cms.web.controller.guest.article.ArticleDescribeController;
 import org.laolis.cms.web.controller.guest.article.ArticleIndexController;
 import org.laolis.cms.web.controller.guest.comment.CommentRestController;
 import org.laolis.cms.web.controller.guest.page.PageDescribeController;
-import org.laolis.cms.web.controller.guest.user.*;
+import org.laolis.cms.web.controller.guest.rating.RatingRestController;
+import org.laolis.cms.web.controller.guest.user.LoginController;
+import org.laolis.cms.web.controller.guest.user.PasswordResetController;
+import org.laolis.cms.web.controller.guest.user.PasswordUpdateController;
+import org.laolis.cms.web.controller.guest.user.ProfileUpdateController;
+import org.laolis.cms.web.controller.guest.user.SignupController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -93,6 +102,12 @@ public class WebGuestConfiguration extends DelegatingWebMvcConfiguration {
 
 		@Bean
 		@ConditionalOnMissingBean
+		public RatingRestController ratingRestController() {
+			return new RatingRestController();
+		}
+
+		@Bean
+		@ConditionalOnMissingBean
 		public LoginController loginController() {
 			return new LoginController();
 		}
@@ -144,7 +159,7 @@ public class WebGuestConfiguration extends DelegatingWebMvcConfiguration {
 		public CategoryController categoryController() {
 			return new CategoryController();
 		}
-		
+
 		@Bean
 		@ConditionalOnMissingBean
 		public TagController tagController() {
