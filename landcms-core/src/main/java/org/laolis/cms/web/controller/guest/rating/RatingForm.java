@@ -31,11 +31,11 @@ public class RatingForm implements Serializable {
 		this.ratingStar = ratingStar;
 	}
 
-	public RatingCreateRequest toRatingCreateRequest(BlogLanguage blogLanguage, User user) {
+	public RatingCreateRequest toRatingCreateRequest(BlogLanguage blogLanguage, User author) {
 		RatingCreateRequest request = new RatingCreateRequest();
 		request.setBlogLanguage(blogLanguage);
 		request.setPostId(getPostId());
-		request.setAuthorId(user.getId());
+		request.setAuthorId(author.getId());
 		request.setRatingStar(getRatingStar());
 		return request;
 	}

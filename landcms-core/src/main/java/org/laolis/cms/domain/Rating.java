@@ -26,14 +26,14 @@ public class Rating extends DomainObject<Long> {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Field(name = "ratingId")
 	@SortableField(forField = "ratingId")
-	private long id;
+	private Long id;
 
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "post_id")
 	@IndexedEmbedded(includeEmbeddedObjectId = true)
 	private Post post;
 
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "author_id")
 	@IndexedEmbedded(includeEmbeddedObjectId = true)
 	private User author;

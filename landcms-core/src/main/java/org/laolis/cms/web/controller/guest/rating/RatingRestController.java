@@ -57,31 +57,31 @@ public class RatingRestController {
 	}
 
 // show all user's rated posts at user's profile (consider adding in future)
-	@GetMapping
-	public String listRatings(Model model) {
-		List<Post> posts = postService.getAllPosts();
-		model.addAttribute("posts", posts);
+//	@GetMapping
+//	public String listRatings(Model model) {
+//		List<Post> posts = postService.getAllPosts();
+//		model.addAttribute("posts", posts);
+//
+//		Map<Long, Integer> userRatings = new HashMap<>();
+//		for (Post post : posts) {
+//			Integer userRating = ratingService.getUserRatingForPost(post.getId());
+//			userRatings.put(post.getId(), userRating);
+//		}
+//		model.addAttribute("userRatings", userRatings);
+//
+//		return "/ratings";
+//	}
 
-		Map<Long, Integer> userRatings = new HashMap<>();
-		for (Post post : posts) {
-			Integer userRating = ratingService.getUserRatingForPost(post.getId());
-			userRatings.put(post.getId(), userRating);
-		}
-		model.addAttribute("userRatings", userRatings);
-
-		return "/ratings";
-	}
-
-	@PostMapping("/rate")
-	public String ratePost(@ModelAttribute RatingCreateRequest ratingCreateRequest, AuthorizedUser createdBy) {
-		Rating userRating = ratingService.saveUserRating(ratingCreateRequest, createdBy);
-
-		if (userRating != null) {
-			postService.updateAverageRating(userRating.getPost().getId());
-		}
-
-		return "redirect:/ratings";
-	}
+//	@PostMapping("/rate")
+//	public String ratePost(@ModelAttribute RatingCreateRequest ratingCreateRequest, AuthorizedUser createdBy) {
+//		Rating userRating = ratingService.saveUserRating(ratingCreateRequest, createdBy);
+//
+//		if (userRating != null) {
+//			postService.updateAverageRating(userRating.getPost().getId());
+//		}
+//
+//		return "redirect:/ratings";
+//	}
 
 	@RequestMapping(value = "/new", method = RequestMethod.POST)
 	public RatingSavedModel create(@Validated RatingForm form, BindingResult result, BlogLanguage blogLanguage,
@@ -92,6 +92,9 @@ public class RatingRestController {
 
 		RatingCreateRequest request = form.toRatingCreateRequest(blogLanguage, authorizedUser);
 		Rating rating = ratingService.saveUserRating(request, authorizedUser);
+		if (rating != null) {
+			postService.updateAverageRating(rating.getPost().getId());
+		}
 		return new RatingSavedModel(rating);
 	}
 

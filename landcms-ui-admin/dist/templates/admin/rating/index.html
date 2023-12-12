@@ -24,12 +24,14 @@
 										<tr>
 											<th class="col-sm-2" th:text="#{Post}">Post</th>
 											<th class="col-sm-2" th:text="#{Rating}">Rating</th>
+											<th class="col-sm-2" th:text="#{Author}">Author</th>
 										</tr>
 									</thead>
 									<tbody>
 										<tr th:each="rating : ${ratings}">
 											<td><a th:href="@{__${ADMIN_PATH}__/posts/describe(id=${rating.post.id})}" th:text="${rating.post.title}">Post title</a></td>
 											<td th:text="${rating.ratingStar}"></td>
+											<td th:text="${rating.author}"></td>
 										</tr>
 									</tbody>
 								</table>

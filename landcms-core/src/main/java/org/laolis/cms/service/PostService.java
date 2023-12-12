@@ -374,4 +374,9 @@ public class PostService {
 	public Post getPostById(long id, String language) {
 		return postRepository.findOneByIdAndLanguage(id, language);
 	}
+
+	public Post getPostById(Long postId) {
+		// TODO Auto-generated method stub
+		return postRepository.findOneById(postId);
+	}
 }

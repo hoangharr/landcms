@@ -115,8 +115,8 @@
         </div>
         <div>
           <h3 th:text="#{Ratings}">Ratings</h3>
-					<p th:text="${'Average Rating: ' + (post?.averageRating ?: 'N/A')}"></p>
-          <form th:action="@{/ratings/rate}" method="post" th:if="${#authorization.expression('hasRole(''ROLE_VIEWER'')')}">
+					<p th:text="${'Average Rating: ' + (article?.averageRating ?: 'N/A')}"></p>
+          <form th:action="@{/ratings/new}" method="post" th:if="${#authorization.expression('hasRole(''ROLE_VIEWER'')')}">
 						<input type="hidden" name="postId" th:value="${article.id}" />
             <label for="ratingStar">Your Rating:</label>
             <input
